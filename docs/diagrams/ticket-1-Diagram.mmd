@@ -1,0 +1,133 @@
+classDiagram
+direction TB
+class QuoteController {
+-QuoteService quoteService
++createQuote(QuoteRequestDTO dto) ResponseEntity~QuoteResponseDTO~
++getQuoteStatus(Long id) ResponseEntity~QuoteResponseDTO~
+}
+class FilamentController {
+-FilamentService filamentService
++getAvailableFilaments() ResponseEntity~List~FilamentDTO~~
++getColorsByMaterial(String materialType) ResponseEntity~List~String~~
+}
+
+class QuoteRequestDTO {
+<<record>>
+-MultipartFile stlFile
+-Long filamentId
+-LayerHeightProfile layerProfile
+-double infillPercentage
+-int pieceQuantity
+-boolean supportsNeeded
+-String clientName
+-String clientEmail
+}
+
+class QuoteResponseDTO {
+<<record>>
+-Long quoteId
+-QuoteStatus status
+-LocalDateTime createdAt
+}
+
+class FilamentDTO {
+<<record>>
+-Long id
+-String materialType
+-String color
+-BigDecimal pricePerGram
+-boolean available
+}
+
+class QuoteService {
+-QuoteRepository quoteRepository
+-FilamentRepository filamentRepository
++processQuote(QuoteRequestDTO dto) QuoteResponseDTO
++getQuoteById(Long id) QuoteResponseDTO
+}
+
+class FilamentService {
+-FilamentRepository filamentRepository
++getAvailableFilaments() List~FilamentDTO~
++getColorsByMaterial(String materialType) List~String~
+}
+
+class Quote {
+-Long id
+-LocalDateTime createdAt
+-byte[] stlFile
+-Long filamentId
+-LayerHeightProfile layerProfile
+-double infillPercentage
+-int pieceQuantity
+-boolean supportsNeeded
+-QuoteStatus status
+-String clientName
+-String clientEmail
+}
+
+class Filament {
+-Long id
+-String materialType
+-String color
+-BigDecimal pricePerGram
+-String filamentSettingsId
+-boolean available
+}
+
+class QuoteRepository {
+<<interface>>
+extends CrudRepository~Quote, Long~
+}
+
+class FilamentRepository {
+<<interface>>
+extends CrudRepository~Filament, Long~
++findByAvailableTrue() List~Filament~
++findByMaterialTypeAndAvailableTrue(String materialType) List~Filament~
+}
+
+class LayerHeightProfile {
+    <<enumeration>>
+    EXTRA_FINE_08(0.08,"GP001")
+    HIGH_QUALITY_08(0.08,"GP099")
+    FINE_12(0.12,"GP002")
+    HIGH_QUALITY_12(0.12,"GP103")
+    HIGH_QUALITY_16(0.16,"GP107")
+    OPTIMAL_16(0.16,"GP003")
+    STANDARD_20(0.20,"GP004")
+    STRENGTH_20(0.20,"GP013")
+    DRAFT_24(0.24,"GP005")
+    EXTRA_DRAFT_28(0.28,"GP006")
+}
+
+class QuoteStatus {
+<<enumeration>>
+CREADO
+EN_PROGRESO
+FINALIZADO
+}
+
+class QuoteException {
+<<abstract>>
+}
+class FileFormatException
+class InvalidQuantityException
+class InvalidParametersException
+class MissingParametersException
+class ResourceNotFoundException
+
+class QuoteExceptionHandler
+
+QuoteController --> QuoteService
+FilamentController --> FilamentService
+FilamentService --> FilamentRepository
+QuoteService --> QuoteRepository
+QuoteService --> FilamentRepository
+QuoteService ..> QuoteException
+QuoteExceptionHandler ..> QuoteException
+QuoteException <|-- FileFormatException
+QuoteException <|-- InvalidQuantityException
+QuoteException <|-- InvalidParametersException
+QuoteException <|-- MissingParametersException
+QuoteException <|-- ResourceNotFoundException
