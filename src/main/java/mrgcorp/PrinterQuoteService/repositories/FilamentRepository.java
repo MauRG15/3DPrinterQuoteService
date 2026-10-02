@@ -1,0 +1,17 @@
+package mrgcorp.PrinterQuoteService.repositories;
+
+import mrgcorp.PrinterQuoteService.models.Filament;
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.CrudRepository;
+
+import java.util.List;
+
+public interface FilamentRepository extends CrudRepository<Filament,Long> {
+    //Encontrar filamentos disponibles
+    @Query("SELECT * FROM Filament WHERE available=1")
+    List<Filament> availableFilaments();
+
+    //Encontrar por material y disponible
+    @Query("SELECT * FROM Filament WHERE available=1 AND material_type=:type")
+    List<Filament> avaiableTypeFilament(String type);
+}
