@@ -10,6 +10,5 @@ public record Filament(
     String color,
     BigDecimal pricePerKg,
     String filamentSettingsId,
-    boolean available
-){
+    boolean available){
 }
