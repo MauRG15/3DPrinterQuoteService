@@ -15,7 +15,12 @@ public class FilamentService {
     public List<Filament> getAvailableFilaments(){
         return filamentRepository.availableFilaments();
     }
-    public List<String> getColorsByMaterial(String materialType, String color){
-        return filamentRepository.colorsByMaterial(materialType);
+    public List<String> getColorsByMaterial(String materialType){
+        return filamentRepository.colorsByMaterial(materialType.toUpperCase());
+    }
+
+    //Agregar nuevo filamento
+    public void addNewFilament(Filament filament){
+        filamentRepository.save(filament);
     }
 }
