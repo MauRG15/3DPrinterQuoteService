@@ -8,4 +8,7 @@ public interface QuoteRepository extends CrudRepository<Quote,Long> {
     //Obtener una Quote
     @Query("SELECT * FROM Quote WHERE id = :id")
     Quote findQuote(Long id);
+
+    //Guardar Query
+    //Usamos el metodo heredado de CrudRepository save
 }
