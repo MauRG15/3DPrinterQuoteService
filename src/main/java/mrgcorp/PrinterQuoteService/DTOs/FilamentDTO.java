@@ -1,4 +1,4 @@
-package DTOs;
+package mrgcorp.PrinterQuoteService.DTOs;
 
 import java.math.BigDecimal;
 

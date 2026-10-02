@@ -1,4 +1,4 @@
-package enumerations;
+package mrgcorp.PrinterQuoteService.enumerations;
 
 public enum LayerHeightProfile {
     EXTRA_FINE_08(0.08,"GP001"),

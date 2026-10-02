@@ -1,4 +1,4 @@
-package enumerations;
+package mrgcorp.PrinterQuoteService.enumerations;
 
 public enum QuoteStatus {
     CREADO,

@@ -1,4 +1,4 @@
-package models;
+package mrgcorp.PrinterQuoteService.models;
 
 import org.springframework.data.annotation.Id;
 

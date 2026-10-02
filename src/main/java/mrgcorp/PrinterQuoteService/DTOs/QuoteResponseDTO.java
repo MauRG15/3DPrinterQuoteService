@@ -1,6 +1,6 @@
-package DTOs;
+package mrgcorp.PrinterQuoteService.DTOs;
 
-import enumerations.QuoteStatus;
+import mrgcorp.PrinterQuoteService.enumerations.QuoteStatus;
 
 import java.time.LocalDateTime;
 

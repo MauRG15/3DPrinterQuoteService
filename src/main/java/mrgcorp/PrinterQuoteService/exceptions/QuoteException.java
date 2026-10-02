@@ -1,4 +1,4 @@
-package exceptions;
+package mrgcorp.PrinterQuoteService.exceptions;
 
 public abstract class QuoteException extends RuntimeException{
 }

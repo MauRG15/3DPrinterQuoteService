@@ -1,6 +1,6 @@
-package DTOs;
+package mrgcorp.PrinterQuoteService.DTOs;
 
-import enumerations.LayerHeightProfile;
+import mrgcorp.PrinterQuoteService.enumerations.LayerHeightProfile;
 import org.springframework.web.multipart.MultipartFile;
 
 public record QuoteRequestDTO(

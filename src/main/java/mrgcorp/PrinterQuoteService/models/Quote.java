@@ -1,7 +1,7 @@
-package models;
+package mrgcorp.PrinterQuoteService.models;
 
-import enumerations.LayerHeightProfile;
-import enumerations.QuoteStatus;
+import mrgcorp.PrinterQuoteService.enumerations.LayerHeightProfile;
+import mrgcorp.PrinterQuoteService.enumerations.QuoteStatus;
 import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
