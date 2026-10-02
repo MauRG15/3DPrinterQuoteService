@@ -13,5 +13,9 @@ public interface FilamentRepository extends CrudRepository<Filament,Long> {
 
     //Encontrar por material y disponible
     @Query("SELECT * FROM Filament WHERE available=1 AND material_type=:type")
-    List<Filament> avaiableTypeFilament(String type);
+    List<Filament> availableFilamentType(String type);
+
+    //Encontrar colores disponibles de un tipo de material
+    @Query("SELECT DISTINCT color FROM Filament WHERE available=1 AND material_type=:type")
+    List<String> colorsByMaterial(String type);
 }
