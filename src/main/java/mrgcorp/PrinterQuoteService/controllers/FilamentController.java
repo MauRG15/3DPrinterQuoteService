@@ -1,7 +1,10 @@
 package mrgcorp.PrinterQuoteService.controllers;
 
+import mrgcorp.PrinterQuoteService.DTOs.FilamentDTO;
 import mrgcorp.PrinterQuoteService.models.Filament;
 import mrgcorp.PrinterQuoteService.services.FilamentService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,17 +18,16 @@ public class FilamentController {
         this.filamentService=filamentService;
     }
     @GetMapping("/available")
-    public List<Filament> getAvailableFilaments(){
-        return filamentService.getAvailableFilaments();
+    public ResponseEntity<List<FilamentDTO>> getAvailableFilaments(){
+        return ResponseEntity
+                .status(HttpStatus.FOUND)
+                .body(filamentService.getAvailableFilaments());
     }
 
     @GetMapping("/colorsByMaterial")
-    public List<String> getColorsByMaterial(@RequestParam String material_type){
-        return filamentService.getColorsByMaterial(material_type);
-    }
-
-    @PostMapping("/registerFilament")
-    public void registerFilament(@RequestBody(required = true) Filament filament){
-        filamentService.addNewFilament(filament);
+    public ResponseEntity<List<String>> getColorsByMaterial(@RequestParam String material_type){
+        return ResponseEntity
+                .status(HttpStatus.FOUND)
+                .body(filamentService.getColorsByMaterial(material_type));
     }
 }
