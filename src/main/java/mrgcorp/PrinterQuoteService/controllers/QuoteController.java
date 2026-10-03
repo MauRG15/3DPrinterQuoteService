@@ -1,6 +1,7 @@
 package mrgcorp.PrinterQuoteService.controllers;
 
-import mrgcorp.PrinterQuoteService.models.Quote;
+import mrgcorp.PrinterQuoteService.DTOs.QuoteRequestDTO;
+import mrgcorp.PrinterQuoteService.DTOs.QuoteResponseDTO;
 import mrgcorp.PrinterQuoteService.services.QuoteService;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,12 +15,12 @@ public class QuoteController {
 
     //Obtener una Quote
     @GetMapping("/quote")
-    public Quote getQuote(@RequestParam Long id){
-        return quoteService.findQuote(id);
+    public QuoteResponseDTO getQuote(@RequestParam Long id){
+        return quoteService.getQuoteById(id);
     }
     //Crear una quote nueva
     @PostMapping("/quote")
-    public void createQuote(@RequestBody Quote quote){
-        quoteService.processQuote(quote);
+    public QuoteResponseDTO createQuote(@RequestBody QuoteRequestDTO quote){
+        return quoteService.processQuote(quote);
     }
 }
