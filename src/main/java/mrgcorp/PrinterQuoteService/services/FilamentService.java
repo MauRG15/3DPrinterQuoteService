@@ -1,6 +1,7 @@
 package mrgcorp.PrinterQuoteService.services;
 
 import mrgcorp.PrinterQuoteService.DTOs.FilamentDTO;
+import mrgcorp.PrinterQuoteService.annotations.ValidateMaterial;
 import mrgcorp.PrinterQuoteService.models.Filament;
 import mrgcorp.PrinterQuoteService.repositories.FilamentRepository;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ public class FilamentService {
                 .collect(Collectors.toUnmodifiableList());
         return listDto;
     }
+    @ValidateMaterial
     public List<String> getColorsByMaterial(String materialType){
         return filamentRepository.colorsByMaterial(materialType.toUpperCase());
     }

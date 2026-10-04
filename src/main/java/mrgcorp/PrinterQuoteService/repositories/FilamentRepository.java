@@ -1,5 +1,6 @@
 package mrgcorp.PrinterQuoteService.repositories;
 
+import mrgcorp.PrinterQuoteService.annotations.ValidateMaterial;
 import mrgcorp.PrinterQuoteService.models.Filament;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -19,6 +20,6 @@ public interface FilamentRepository extends CrudRepository<Filament,Long> {
     @Query("SELECT DISTINCT color FROM Filament WHERE available=1 AND material_type=:type")
     List<String> colorsByMaterial(String type);
 
-    @Query("SELECT id FROM Filament WHERE available=1")
-    List<Long> findFilamentById(Long id);
+    @Query("SELECT id FROM Filament WHERE available=1 AND id=:id")
+    Long findFilamentById(Long id);
 }
