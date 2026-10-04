@@ -15,7 +15,7 @@ public class FilamentAspect {
     public FilamentAspect(FilamentRepository filamentRepository){
         this.filamentRepository=filamentRepository;
     }
-    @Before("@annotation(ValidateMaterial)")
+    @Before("@annotation(mrgcorp.PrinterQuoteService.annotations.ValidateMaterial) && args(materialType)")
     public void validarMaterial(String materialType){
         List lista = filamentRepository.availableFilamentType(materialType);
         if(lista.size()==0)throw new ResourceNotFoundException("El tipo de filamento no esta disponible, elige uno valido");

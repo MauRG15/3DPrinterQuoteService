@@ -7,7 +7,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("3dPrinterQuoteService/quote")
+@RequestMapping("/3dPrinterQuoteService")
 public class QuoteController {
     private final QuoteService quoteService;
     public QuoteController(QuoteService quoteService){
