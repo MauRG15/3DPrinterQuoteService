@@ -48,7 +48,7 @@ public class QuoteService {
             //Devolvemos el QuoteResponseDTO de la quote recien creada
             return quoteRepository.findQuote(quoteCreada.id());
         }catch (IOException e){
-            throw new FileFormatException("");
+            throw new FileFormatException("No se pudo leer archivo STL");
         }
     }
 

@@ -28,6 +28,8 @@ public class QuoteAspect {
         //Verificar que el id del filamento exista en la BD
         Long id = filamentRepository.findFilamentById(quoteRequestDTO.filamentId());
         if(id==null) throw new ResourceNotFoundException("Filamento no encontrado");
+        //Verificar que el filamento este disponible
+        if(!filamentRepository.availableFilamentId(id)) throw new ResourceNotFoundException("Filamento no disponible, elige otro");
     }
 
     @Before("@annotation(mrgcorp.PrinterQuoteService.annotations.ValidateIdQuote) && args(id)")
