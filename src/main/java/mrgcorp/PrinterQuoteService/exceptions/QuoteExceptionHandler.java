@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 
@@ -58,6 +59,21 @@ public class QuoteExceptionHandler{
                 new FileFormatException("El archivo supera el limite permitido (100 MB)");
 
         // Devolvemos la respuesta usando el mensaje de tu excepción
+        return ResponseEntity.badRequest().body(customException.getMessage());
+    }
+
+    //Manejar errores de fallo de conversion de tipos
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<String> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String nombreParametro = ex.getName();
+        Object valorRecibido = ex.getValue();
+        String tipoRequerido = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "número";
+
+        String mensaje = String.format("El parámetro '%s' debe ser de tipo %s. Valor recibido: '%s'",
+                nombreParametro, tipoRequerido, valorRecibido);
+        
+        InvalidParametersException customException = new InvalidParametersException(mensaje);
+
         return ResponseEntity.badRequest().body(customException.getMessage());
     }
 }
