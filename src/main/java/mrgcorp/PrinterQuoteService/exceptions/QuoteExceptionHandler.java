@@ -1,6 +1,7 @@
 package mrgcorp.PrinterQuoteService.exceptions;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -51,7 +52,7 @@ public class QuoteExceptionHandler{
     // Manejar excepcion en caso de que el archivo supere el limite 50MB
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<String> handleSpringMaxUploadSizeException(MaxUploadSizeExceededException ex) {
-        return ResponseEntity.badRequest().body("El archivo supera el limite permitido (100 MB)");
+        return ResponseEntity.status(HttpStatusCode.valueOf(413)).body("El archivo supera el limite permitido (100 MB)");
     }
 
     //Manejar errores de fallo de conversion de tipos
