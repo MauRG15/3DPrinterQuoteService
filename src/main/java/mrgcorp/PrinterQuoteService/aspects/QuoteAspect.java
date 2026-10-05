@@ -34,6 +34,6 @@ public class QuoteAspect {
 
     @Before("@annotation(mrgcorp.PrinterQuoteService.annotations.ValidateIdQuote) && args(id)")
     public void validarIdQuote(Long id){
-        if(quoteRepository.findQuote(id)==null) throw new ResourceNotFoundException("Quote {"+id+"} no encontrada, verifica que el ID de la Quote sea uno valido");
+        if(quoteRepository.findQuote(id)==null) throw new ResourceNotFoundException("Quote \""+id+"\" no encontrada, verifica que el ID de la Quote sea uno valido");
     }
 }

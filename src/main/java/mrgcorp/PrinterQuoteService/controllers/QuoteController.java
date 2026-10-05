@@ -3,6 +3,8 @@ package mrgcorp.PrinterQuoteService.controllers;
 import mrgcorp.PrinterQuoteService.DTOs.QuoteRequestDTO;
 import mrgcorp.PrinterQuoteService.DTOs.QuoteResponseDTO;
 import mrgcorp.PrinterQuoteService.services.QuoteService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,14 +17,15 @@ public class QuoteController {
     }
 
     //Obtener una Quote
-    @GetMapping("/quote")
-    public QuoteResponseDTO getQuote(@RequestParam Long id){
+    @GetMapping("/quote/{id}")
+    public QuoteResponseDTO getQuote(@PathVariable Long id){
         return quoteService.getQuoteById(id);
     }
     //Crear una quote nueva
     //@Validated, apoya a que el tipo de dato se cumpla o arroja una runtime excepcion
     @PostMapping("/quote")
-    public QuoteResponseDTO createQuote(@Validated @ModelAttribute QuoteRequestDTO quote){
-        return quoteService.processQuote(quote);
+    public ResponseEntity<QuoteResponseDTO> createQuote(@Validated @ModelAttribute QuoteRequestDTO quote){
+        var quoteRespuesta = quoteService.processQuote(quote);
+        return ResponseEntity.status(HttpStatus.CREATED).body(quoteRespuesta);
     }
 }
