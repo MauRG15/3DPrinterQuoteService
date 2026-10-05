@@ -12,12 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 
-/*
-    Casos de error a evaluar
-    1 Parametros faltantes
-    2 Parametros invalidos
-    3 cantidad de piezas invalidas
-    */
 //1. Con @NotNull se valida que no venga ni un solo dato vacio
 public record QuoteRequestDTO(
         @NotNull(message = "El archivo STL es obligatorio") MultipartFile stlFile,
@@ -28,66 +22,4 @@ public record QuoteRequestDTO(
         @NotNull(message = "Decidir si se necesitan soportes es obligatorio") Boolean supportsNeeded,
         @NotBlank(message = "Es necesario colocar su nombre para identificarlo en la cotizacion") String clientName,
         @NotBlank(message = "Es necesario un correo para comunicarnos con usted") String clientEmail) {
-    //Evaluar datos en constructorprimario/compacto
-    public QuoteRequestDTO{
-        if (stlFile != null) {
-            //1.1 Evaluar si el archivo esta vacio
-            if(stlFile.isEmpty()) throw new InvalidParametersException("El archivo STL esta vacio");
-            //1.2 Evaluar el tipo de archivo
-            String filename = stlFile.getOriginalFilename();
-            if (filename == null || !filename.toLowerCase().endsWith(".stl")) {
-                throw new InvalidParametersException("El archivo no es STL");
-            }
-            //1.3 Evaluar el contenido del archivo
-            if(!stlValido(stlFile)) throw new InvalidParametersException("El archivo tiene la extension STL pero su contenido no lo es");
-        }
-        if(infillPercentage!=null) {
-            //2.1 InfillPercentage fuera de limites
-            if (infillPercentage > 100 || infillPercentage < 0)
-                throw new InvalidParametersException("El porcentaje de relleno es Invalido(0 a 100)");
-        }
-        if (clientName != null && !clientName.isBlank()) {
-            // 2.2 Se evalúa el formato SOLO si el cliente envió un texto con contenido
-            if (!clientName.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+")) {
-                throw new InvalidParametersException("Nombre no válido, contiene números o caracteres especiales");
-            }
-            if (clientName.length() > 100) {
-                throw new InvalidParametersException("El nombre tiene una longitud no válida (MAX: 100 caracteres)");
-            }
-        }
-        if (clientEmail != null && !clientEmail.isBlank()) {
-            //2.3 Verificar que el correo sea valido
-            if (!clientEmail.contains("@") || !clientEmail.endsWith(".com"))
-                throw new InvalidParametersException("Correo invalido");
-        }
-        //3 Verificar la cantidad de piezas quepan en la cama
-        //NOTA: VALOR/CONDICION TEMPORAL, se sustituira con la informacion que se obtenga del slicer
-        if(pieceQuantity!=null) {
-            if (pieceQuantity < 1 || pieceQuantity > 50)
-                throw new InvalidQuantityException("Cantidad invalida de piezas");
-        }
-    }
-
-    private static boolean stlValido(MultipartFile file) {
-        try (InputStream is = file.getInputStream()) {
-            byte[] header = new byte[5];
-            int bytesLeidos = is.read(header);
-
-            if (bytesLeidos < 5) return false;
-
-            // 1. Validar si es STL ASCII (comienza con "solid")
-            String inicio = new String(header, 0, 5, "UTF-8");
-            if ("solid".equalsIgnoreCase(inicio)) {
-                return true;
-            }
-            // 2. Validar si es STL Binario basándonos en su tamaño total
-            // Un archivo STL binario válido debe tener al menos el encabezado (80 bytes) y el contador de triángulos (4 bytes)
-            if (file.getSize() >= 84) {
-                return true;
-            }
-        } catch (IOException e) {
-            throw new FileFormatException("Error al leer el archivo");
-        }
-        return false;
-    }
 }

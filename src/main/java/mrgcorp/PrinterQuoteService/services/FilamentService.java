@@ -1,7 +1,7 @@
 package mrgcorp.PrinterQuoteService.services;
 
 import mrgcorp.PrinterQuoteService.DTOs.FilamentDTO;
-import mrgcorp.PrinterQuoteService.annotations.ValidateMaterial;
+import mrgcorp.PrinterQuoteService.exceptions.ResourceNotFoundException;
 import mrgcorp.PrinterQuoteService.models.Filament;
 import mrgcorp.PrinterQuoteService.repositories.FilamentRepository;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,7 @@ public class FilamentService {
         List<Filament> list = filamentRepository.availableFilaments();
         //EN lugar de regresarle al cliente datos de la entidad que no necesita,
         //Le regresamos datos necesarios, ABSTRACTION
-        List<FilamentDTO> listDto = list.stream()
+        return list.stream()
                 .map(filament -> new FilamentDTO(
                         filament.id(),
                         filament.materialType(),
@@ -27,10 +27,18 @@ public class FilamentService {
                         filament.pricePerKg(),
                         filament.available()))
                 .collect(Collectors.toUnmodifiableList());
-        return listDto;
     }
-    @ValidateMaterial
+
     public List<String> getColorsByMaterial(String materialType){
-        return filamentRepository.colorsByMaterial(materialType.toUpperCase());
+        String material = materialType.toUpperCase();
+        //Validar material este disponible primero
+        validarMaterialDisponible(material);
+        return filamentRepository.colorsByMaterial(material);
+    }
+
+    //Validar material
+    private void validarMaterialDisponible(String material){
+        var lista = filamentRepository.availableFilamentType(material);
+        if(lista.isEmpty())throw new ResourceNotFoundException("El tipo de filamento no esta disponible, elige uno valido");
     }
 }
