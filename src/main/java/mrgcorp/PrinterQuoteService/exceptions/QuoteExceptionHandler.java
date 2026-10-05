@@ -71,7 +71,7 @@ public class QuoteExceptionHandler{
 
         String mensaje = String.format("El parámetro '%s' debe ser de tipo %s. Valor recibido: '%s'",
                 nombreParametro, tipoRequerido, valorRecibido);
-        
+
         InvalidParametersException customException = new InvalidParametersException(mensaje);
 
         return ResponseEntity.badRequest().body(customException.getMessage());

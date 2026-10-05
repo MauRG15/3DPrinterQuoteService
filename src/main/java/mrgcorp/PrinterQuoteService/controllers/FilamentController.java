@@ -19,7 +19,7 @@ public class FilamentController {
     @GetMapping("/available")
     public ResponseEntity<List<FilamentDTO>> getAvailableFilaments(){
         return ResponseEntity
-                .status(HttpStatus.FOUND)
+                .status(HttpStatus.OK)
                 .body(filamentService.getAvailableFilaments());
     }
 
@@ -27,7 +27,7 @@ public class FilamentController {
     public ResponseEntity<List<String>> getColorsByMaterial(@RequestParam String material_type){
         List<String> colores = filamentService.getColorsByMaterial(material_type);
         return ResponseEntity
-                .status(HttpStatus.FOUND)
+                .status(HttpStatus.OK)
                 .body(colores);
     }
 }
