@@ -45,21 +45,13 @@ public class QuoteExceptionHandler{
         else {
             mensaje = error.getDefaultMessage(); // Obtiene el mensaje de @NotNull
         }
-        // Instancias tu excepción personalizada con el mensaje formateado
-        InvalidParametersException customException = new InvalidParametersException(mensaje);
-
-        return ResponseEntity.badRequest().body(customException.getMessage());
+        return ResponseEntity.badRequest().body(mensaje);
     }
 
     // Manejar excepcion en caso de que el archivo supere el limite 50MB
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<String> handleSpringMaxUploadSizeException(MaxUploadSizeExceededException ex) {
-        // Traducimos el error de Spring instanciando excepción personalizada
-        FileFormatException customException =
-                new FileFormatException("El archivo supera el limite permitido (100 MB)");
-
-        // Devolvemos la respuesta usando el mensaje de tu excepción
-        return ResponseEntity.badRequest().body(customException.getMessage());
+        return ResponseEntity.badRequest().body("El archivo supera el limite permitido (100 MB)");
     }
 
     //Manejar errores de fallo de conversion de tipos
@@ -72,8 +64,6 @@ public class QuoteExceptionHandler{
         String mensaje = String.format("El parámetro '%s' debe ser de tipo %s. Valor recibido: '%s'",
                 nombreParametro, tipoRequerido, valorRecibido);
 
-        InvalidParametersException customException = new InvalidParametersException(mensaje);
-
-        return ResponseEntity.badRequest().body(customException.getMessage());
+        return ResponseEntity.badRequest().body(mensaje);
     }
 }
