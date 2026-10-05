@@ -18,8 +18,9 @@ public class QuoteController {
 
     //Obtener una Quote
     @GetMapping("/quote/{id}")
-    public QuoteResponseDTO getQuote(@PathVariable Long id){
-        return quoteService.getQuoteById(id);
+    public ResponseEntity<QuoteResponseDTO> getQuote(@PathVariable Long id){
+        QuoteResponseDTO quoteResponseDTO = quoteService.getQuoteById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(quoteResponseDTO);
     }
     //Crear una quote nueva
     //@Validated, apoya a que el tipo de dato se cumpla o arroja una runtime excepcion
