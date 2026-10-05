@@ -22,5 +22,5 @@ public record QuoteRequestDTO(
         @NotNull(message = "La cantidad de piezas es obligatoria") Integer pieceQuantity,
         @NotNull(message = "Decidir si se necesitan soportes es obligatorio") Boolean supportsNeeded,
         @NotBlank(message = "Es necesario colocar su nombre para identificarlo en la cotizacion") String clientName,
-        @Email(message = "Es necesario un correo para comunicarnos con usted") String clientEmail) {
+        @NotBlank(message = "Es necesario un correo para comunicarnos con usted") String clientEmail) {
 }
