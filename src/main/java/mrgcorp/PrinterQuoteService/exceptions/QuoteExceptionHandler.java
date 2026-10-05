@@ -24,7 +24,7 @@ public class QuoteExceptionHandler{
     }
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<String> exceptionResourceNotFoundHandler(ResourceNotFoundException e){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
     // 2. Manejador para las excepciones de Spring

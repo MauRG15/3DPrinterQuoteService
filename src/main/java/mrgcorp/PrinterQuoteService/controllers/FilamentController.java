@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/3dPrinterQuoteService/filament")
+@RequestMapping("/filament")
 public class FilamentController {
     private final FilamentService filamentService;
     public FilamentController(FilamentService filamentService){
@@ -24,8 +24,8 @@ public class FilamentController {
     }
 
     @GetMapping("/colorsByMaterial")
-    public ResponseEntity<List<String>> getColorsByMaterial(@RequestParam String material_type){
-        List<String> colores = filamentService.getColorsByMaterial(material_type);
+    public ResponseEntity<List<String>> getColorsByMaterial(@RequestParam String materialType){
+        List<String> colores = filamentService.getColorsByMaterial(materialType);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(colores);
