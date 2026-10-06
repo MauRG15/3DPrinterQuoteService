@@ -31,14 +31,6 @@ public class FilamentService {
 
     public List<String> getColorsByMaterial(String materialType){
         String material = materialType.toUpperCase();
-        //Validar material este disponible primero
-        validarMaterialDisponible(material);
         return filamentRepository.colorsByMaterial(material);
-    }
-
-    //Validar material
-    private void validarMaterialDisponible(String material){
-        var lista = filamentRepository.availableFilamentType(material);
-        if(lista.isEmpty())throw new ResourceNotFoundException("El tipo de filamento no esta disponible, elige uno valido");
     }
 }

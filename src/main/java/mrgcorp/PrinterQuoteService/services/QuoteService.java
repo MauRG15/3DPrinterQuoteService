@@ -7,6 +7,7 @@ import mrgcorp.PrinterQuoteService.exceptions.FileFormatException;
 import mrgcorp.PrinterQuoteService.exceptions.InvalidParametersException;
 import mrgcorp.PrinterQuoteService.exceptions.InvalidQuantityException;
 import mrgcorp.PrinterQuoteService.exceptions.ResourceNotFoundException;
+import mrgcorp.PrinterQuoteService.models.Filament;
 import mrgcorp.PrinterQuoteService.models.Quote;
 import mrgcorp.PrinterQuoteService.repositories.FilamentRepository;
 import mrgcorp.PrinterQuoteService.repositories.QuoteRepository;
@@ -31,14 +32,14 @@ public class QuoteService {
     }
     //Generar Quote
     public QuoteResponseDTO processQuote(QuoteRequestDTO quoteRequestDTO){
+        //Validamos Datos antes de crear la Quote
+        validarStlFile(quoteRequestDTO.stlFile());
+        validarFilamento(quoteRequestDTO.filamentId());
+        validarPieceQuantity(quoteRequestDTO.pieceQuantity());
+        validarInfillPercentage(quoteRequestDTO.infillPercentage());
+        validarClientName(quoteRequestDTO.clientName());
+        validarClientEmail(quoteRequestDTO.clientEmail());
         try {
-            //Validamos Datos antes de crear la Quote
-            validarStlFile(quoteRequestDTO.stlFile());
-            validarFilamento(quoteRequestDTO.filamentId());
-            validarPieceQuantity(quoteRequestDTO.pieceQuantity());
-            validarInfillPercentage(quoteRequestDTO.infillPercentage());
-            validarClientName(quoteRequestDTO.clientName());
-            validarClientEmail(quoteRequestDTO.clientEmail());
             /*Convertir el MultipartFile (tipo de archivo de Spring) es una interfaz de Spring
             que representa el archivo todavía sin leer — vive temporalmente mientras dura la petición HTTP,
             con metadatos (nombre original, tipo de contenido) además del contenido en sí.
@@ -68,21 +69,18 @@ public class QuoteService {
 
     //Obtener Quote
     public QuoteResponseDTO getQuoteById(Long id){
-        validarIdQuote(id);
-        Quote quote = quoteRepository.findQuote(id);
+        var quote = quoteRepository.findQuote(id)
+                .orElseThrow(()->new InvalidParametersException("Quote \\\"\"+id+\"\\\" no encontrada, verifica que el ID de la Quote sea uno valido"));
         return new QuoteResponseDTO(quote.id(),quote.status(),quote.createdAt());
     }
 
     //Metodos de validacion
     private void validarFilamento(Long filamentId){
         //Verificar que el id del filamento exista en la BD
-        Long id = filamentRepository.findFilamentById(filamentId);
-        if(id==null) throw new ResourceNotFoundException("Filamento no encontrado");
+        Filament filament = filamentRepository.findFilamentById(filamentId);
+        if(filament==null) throw new ResourceNotFoundException("Filamento no encontrado");
         //Verificar que el filamento este disponible
-        if(!filamentRepository.availableFilamentId(id)) throw new ResourceNotFoundException("Filamento no disponible, elige otro");
-    }
-    private void validarIdQuote(Long id){
-        if(quoteRepository.findQuote(id)==null) throw new ResourceNotFoundException("Quote \""+id+"\" no encontrada, verifica que el ID de la Quote sea uno valido");
+        if(!filament.available()) throw new InvalidParametersException("Filamento no disponible, elige otro");
     }
 
     private void validarStlFile(MultipartFile stlFile){
@@ -97,13 +95,13 @@ public class QuoteService {
         if(!contenidoStlValido(stlFile)) throw new InvalidParametersException("El archivo tiene la extension STL pero su contenido no lo es");
     }
 
-    public void validarInfillPercentage(Double infillPercentage){
+    private void validarInfillPercentage(Double infillPercentage){
         //2.1 InfillPercentage fuera de limites
         if (infillPercentage > 100 || infillPercentage < 0)
             throw new InvalidParametersException("El porcentaje de relleno es Invalido(0 a 100)");
     }
 
-    public void validarClientName(String clientName){
+    private void validarClientName(String clientName){
         // 2.2 Se evalúa el formato SOLO si el cliente envió un texto con contenido
         if (!clientName.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+")) {
             throw new InvalidParametersException("Nombre no válido, contiene números o caracteres especiales");
@@ -113,13 +111,13 @@ public class QuoteService {
         }
     }
 
-    public void validarClientEmail(String clientEmail){
+    private void validarClientEmail(String clientEmail){
         //2.3 Verificar que el correo sea valido
         if (!clientEmail.contains("@") || !clientEmail.endsWith(".com"))
             throw new InvalidParametersException("Correo invalido");
     }
 
-    public void validarPieceQuantity(Integer pieceQuantity){
+    private void validarPieceQuantity(Integer pieceQuantity){
         //NOTA: VALOR/CONDICION TEMPORAL, se sustituira con la informacion que se obtenga del slicer
         if (pieceQuantity < 1 || pieceQuantity > 50)
             throw new InvalidQuantityException("Cantidad invalida de piezas");

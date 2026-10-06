@@ -1,17 +1,9 @@
 package mrgcorp.PrinterQuoteService.DTOs;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import mrgcorp.PrinterQuoteService.enumerations.LayerHeightProfile;
-import mrgcorp.PrinterQuoteService.exceptions.FileFormatException;
-import mrgcorp.PrinterQuoteService.exceptions.InvalidParametersException;
-import mrgcorp.PrinterQuoteService.exceptions.InvalidQuantityException;
-import mrgcorp.PrinterQuoteService.exceptions.MissingParametersException;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 //1. Con @NotNull se valida que no venga ni un solo dato vacio
 public record QuoteRequestDTO(
