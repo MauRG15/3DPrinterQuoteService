@@ -1,4 +1,4 @@
-package mrgcorp._dPrinter_quote_service;
+package mrgcorp.PrinterQuoteService;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
