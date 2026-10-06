@@ -16,7 +16,8 @@ public class FilamentService {
         this.filamentRepository = filamentRepository;
     }
     public List<FilamentDTO> getAvailableFilaments(){
-        List<Filament> list = filamentRepository.availableFilaments();
+        List<Filament> list = filamentRepository.availableFilaments()
+                .orElseThrow(()->new ResourceNotFoundException("No hay filamentos disponibles"));
         //EN lugar de regresarle al cliente datos de la entidad que no necesita,
         //Le regresamos datos necesarios, ABSTRACTION
         return list.stream()
@@ -26,11 +27,13 @@ public class FilamentService {
                         filament.color(),
                         filament.pricePerKg(),
                         filament.available()))
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
     public List<String> getColorsByMaterial(String materialType){
         String material = materialType.toUpperCase();
-        return filamentRepository.colorsByMaterial(material);
+        List<String> lista = filamentRepository.colorsByMaterial(material)
+                .orElseThrow(()->new ResourceNotFoundException("No hay colores disponibles para material "+material));
+        return lista;
     }
 }

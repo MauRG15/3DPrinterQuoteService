@@ -1,6 +1,5 @@
 package mrgcorp.PrinterQuoteService.repositories;
 
-import mrgcorp.PrinterQuoteService.DTOs.QuoteResponseDTO;
 import mrgcorp.PrinterQuoteService.models.Quote;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;

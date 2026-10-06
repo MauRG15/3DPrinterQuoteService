@@ -67,15 +67,15 @@ public class QuoteService {
     //Obtener Quote
     public QuoteResponseDTO getQuoteById(Long id){
         var quote = quoteRepository.findQuote(id)
-                .orElseThrow(()->new InvalidParametersException("Quote \""+id+"\" no encontrada, verifica que el ID de la Quote sea uno valido"));
+                .orElseThrow(()->new ResourceNotFoundException("Quote \""+id+"\" no encontrada, verifica que el ID de la Quote sea uno valido"));
         return new QuoteResponseDTO(quote.id(),quote.status(),quote.createdAt());
     }
 
     //Metodos de validacion
     private void validarFilamento(Long filamentId){
         //Verificar que el id del filamento exista en la BD
-        Filament filament = filamentRepository.findFilamentById(filamentId);
-        if(filament==null) throw new ResourceNotFoundException("Filamento no encontrado");
+        Filament filament = filamentRepository.findFilamentById(filamentId)
+                .orElseThrow(()->new ResourceNotFoundException("Filamento no encontrado"));
         //Verificar que el filamento este disponible
         if(!filament.available()) throw new FilamentUnavailableException("Filamento no disponible, elige otro");
     }
