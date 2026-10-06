@@ -70,7 +70,7 @@ public class QuoteService {
     //Obtener Quote
     public QuoteResponseDTO getQuoteById(Long id){
         var quote = quoteRepository.findQuote(id)
-                .orElseThrow(()->new InvalidParametersException("Quote \\\"\"+id+\"\\\" no encontrada, verifica que el ID de la Quote sea uno valido"));
+                .orElseThrow(()->new InvalidParametersException("Quote \""+id+"\" no encontrada, verifica que el ID de la Quote sea uno valido"));
         return new QuoteResponseDTO(quote.id(),quote.status(),quote.createdAt());
     }
 
