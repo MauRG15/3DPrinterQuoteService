@@ -3,10 +3,7 @@ package mrgcorp.PrinterQuoteService.services;
 import mrgcorp.PrinterQuoteService.DTOs.QuoteRequestDTO;
 import mrgcorp.PrinterQuoteService.DTOs.QuoteResponseDTO;
 import mrgcorp.PrinterQuoteService.enumerations.QuoteStatus;
-import mrgcorp.PrinterQuoteService.exceptions.FileFormatException;
-import mrgcorp.PrinterQuoteService.exceptions.InvalidParametersException;
-import mrgcorp.PrinterQuoteService.exceptions.InvalidQuantityException;
-import mrgcorp.PrinterQuoteService.exceptions.ResourceNotFoundException;
+import mrgcorp.PrinterQuoteService.exceptions.*;
 import mrgcorp.PrinterQuoteService.models.Filament;
 import mrgcorp.PrinterQuoteService.models.Quote;
 import mrgcorp.PrinterQuoteService.repositories.FilamentRepository;
@@ -80,7 +77,7 @@ public class QuoteService {
         Filament filament = filamentRepository.findFilamentById(filamentId);
         if(filament==null) throw new ResourceNotFoundException("Filamento no encontrado");
         //Verificar que el filamento este disponible
-        if(!filament.available()) throw new InvalidParametersException("Filamento no disponible, elige otro");
+        if(!filament.available()) throw new FilamentUnavailableException("Filamento no disponible, elige otro");
     }
 
     private void validarStlFile(MultipartFile stlFile){
