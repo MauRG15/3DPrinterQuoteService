@@ -1,0 +1,18 @@
+# Ticket #2 — Cotización automática con el slicer
+
+**Contexto:** hoy una solicitud se guarda con estatus `CREADO` y alguien tiene que laminar la pieza a mano para darle un precio al cliente. Queremos que el sistema lo haga solo: que lamine el STL, obtenga tiempo y material, calcule el precio y se lo devuelva al cliente sin intervención manual.
+
+**Criterios de aceptación:**
+
+- Al crear una solicitud, el sistema la lamina automáticamente y devuelve al cliente el tiempo estimado, los gramos de filamento y el precio.
+- El precio se calcula a partir del material consumido, el tiempo de máquina y un margen. Ninguno de esos valores está escrito en el código: se configuran fuera.
+- La solicitud queda guardada con esos resultados, de modo que consultarla después devuelve la misma cotización sin volver a laminar.
+- Si el slicer no responde o falla, la solicitud **no se pierde**: queda registrada y el cliente recibe un mensaje claro de que su cotización se procesará aparte.
+- Los parámetros que el cliente eligió (material, calidad, relleno, soportes, cantidad) se traducen correctamente a lo que la API del slicer espera.
+- El sistema registra cuánto tarda cada laminado.
+
+**Fuera de alcance:**
+
+- Nada de recomendación de configuraciones por historial (eso es el Ticket #3).
+- Nada de horas de impresora ni mantenimiento.
+- Nada de panel visual ni notificaciones al cliente.

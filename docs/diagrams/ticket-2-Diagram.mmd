@@ -1,0 +1,100 @@
+classDiagram
+class StlDraftResponseDTO {
+<<record>>
+-String draftToken
+}
+
+class ThreeMfConversionResponseDTO {
+<<record>>
+-String inputToken
+}
+
+class SliceResultResponseDTO {
+<<record>>
+-Estimate estimate
+}
+
+class Estimate {
+<<record>>
+-Double timeSeconds
+-Double weightGrams
+}
+
+class OrcaSlicerClient {
+-WebClient webClient
+-String machineId
+-importStl(String processId, MultipartFile stlFile) StlDraftResponseDTO
+-convertStl(String draftToken) ThreeMfConversionResponseDTO
+-sliceStl(String inputToken, String processId, String filamentSettingsId, int pieceQuantity, boolean supportsNeeded, double infillPercentage) SliceResultResponseDTO
++processSlicer(MultipartFile stlFile, String processId, String filamentSettingsId, int pieceQuantity, boolean supportsNeeded, double infillPercentage) SliceResultResponseDTO
+}
+
+class QuoteService {
+-QuoteRepository quoteRepository
+-FilamentRepository filamentRepository
+-OrcaSlicerClient orcaSlicerClient
+-PricingService pricingService
++processQuote(QuoteRequestDTO quoteRequestDTO) QuoteResponseDTO
++getQuoteById(Long id) QuoteResponseDTO
+}
+
+class PricingService {
+-BigDecimal profitMargin
+-BigDecimal machineCostPerHour
++calculatePrice(SliceResultResponseDTO sliceResult, Filament filament) BigDecimal
+}
+
+class Quote {
+-Long id
+-LocalDateTime createdAt
+-byte[] stlFile
+-Long filamentId
+-LayerHeightProfile layerProfile
+-double infillPercentage
+-int pieceQuantity
+-boolean supportsNeeded
+-QuoteStatus status
+-String clientName
+-String clientEmail
+-BigDecimal totalPrice
+-Double weightGrams
+-Double timeSeconds
++getters()
++setters()
+}
+
+class QuoteResponseDTO {
+<<record>>
+-Long quoteId
+-QuoteStatus status
+-LocalDateTime createdAt
+-Double timeSeconds
+-Double weightGrams
+-BigDecimal totalPrice
+}
+
+class QuoteStatus {
+<<enumeration>>
+CREADO
+COTIZADA
+REVISION_MANUAL
+}
+
+class SlicerException
+class ImportStlException
+class ConvertStlException
+class SliceStlException
+
+SliceResultResponseDTO --> Estimate
+
+QuoteService --> QuoteRepository
+QuoteService --> FilamentRepository
+QuoteService --> OrcaSlicerClient
+QuoteService --> PricingService
+
+RuntimeException <|-- SlicerException
+SlicerException <|-- ImportStlException
+SlicerException <|-- ConvertStlException
+SlicerException <|-- SliceStlException
+
+OrcaSlicerClient ..> SlicerException
