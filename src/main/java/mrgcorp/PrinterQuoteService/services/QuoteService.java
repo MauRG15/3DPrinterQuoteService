@@ -58,7 +58,7 @@ public class QuoteService {
             //Guardamos el objeto en la BD
             Quote quoteCreada = quoteRepository.save(quoteEntity);
             //Mandamos la Quote creada en formato de un QuoteResponse
-            return new QuoteResponseDTO(quoteCreada.getId(),quoteCreada.getStatus(),quoteCreada.getCreatedAt());
+            return new QuoteResponseDTO(quoteCreada.getId(),quoteCreada.getStatus(),quoteCreada.getCreatedAt(),quoteCreada.getTimeSeconds(),quoteCreada.getWeightGrams(),quoteCreada.getTotalPrice());
         }catch (IOException e){
             throw new FileFormatException("No se pudo leer archivo STL");
         }
@@ -68,7 +68,7 @@ public class QuoteService {
     public QuoteResponseDTO getQuoteById(Long id){
         var quote = quoteRepository.findQuote(id)
                 .orElseThrow(()->new ResourceNotFoundException("Quote \""+id+"\" no encontrada, verifica que el ID de la Quote sea uno valido"));
-        return new QuoteResponseDTO(quote.getId(),quote.getStatus(),quote.getCreatedAt());
+        return new QuoteResponseDTO(quote.getId(),quote.getStatus(),quote.getCreatedAt(),quote.getTimeSeconds(),quote.getWeightGrams(),quote.getTotalPrice());
     }
 
     //Metodos de validacion
