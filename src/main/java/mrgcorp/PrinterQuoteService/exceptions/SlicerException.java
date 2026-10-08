@@ -1,4 +1,5 @@
 package mrgcorp.PrinterQuoteService.exceptions;
 
-public class SlicerException {
+public abstract class SlicerException extends RuntimeException{
+    public SlicerException(String mensaje){super(mensaje);}
 }
