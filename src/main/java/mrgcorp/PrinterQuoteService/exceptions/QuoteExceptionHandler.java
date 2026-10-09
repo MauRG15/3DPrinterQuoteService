@@ -18,12 +18,16 @@ public class QuoteExceptionHandler{
             FileFormatException.class,
             InvalidParametersException.class,
             InvalidQuantityException.class})
-    public ResponseEntity<String> exceptionHandler(QuoteException e){
+    public ResponseEntity<String> exceptionQuoteHandler(QuoteException e){
         return ResponseEntity.badRequest().body(e.getMessage());
     }
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<String> exceptionResourceNotFoundHandler(ResourceNotFoundException e){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+    @ExceptionHandler(SlicerException.class)
+    public ResponseEntity<String> exceptionSlicerHandler(SlicerException e){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
     // 2. Manejador para las excepciones de Spring

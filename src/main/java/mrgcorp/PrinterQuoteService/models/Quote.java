@@ -81,6 +81,10 @@ public class Quote {
         return supportsNeeded;
     }
 
+    public void setStatus(QuoteStatus status) {
+        this.status = status;
+    }
+
     public QuoteStatus getStatus() {
         return status;
     }

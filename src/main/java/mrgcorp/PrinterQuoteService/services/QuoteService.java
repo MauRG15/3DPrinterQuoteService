@@ -2,10 +2,12 @@ package mrgcorp.PrinterQuoteService.services;
 
 import mrgcorp.PrinterQuoteService.DTOs.QuoteRequestDTO;
 import mrgcorp.PrinterQuoteService.DTOs.QuoteResponseDTO;
+import mrgcorp.PrinterQuoteService.DTOs.SliceResultResponseDTO;
 import mrgcorp.PrinterQuoteService.enumerations.QuoteStatus;
 import mrgcorp.PrinterQuoteService.exceptions.*;
 import mrgcorp.PrinterQuoteService.models.Filament;
 import mrgcorp.PrinterQuoteService.models.Quote;
+import mrgcorp.PrinterQuoteService.proxies.OrcaSlicerClientProxy;
 import mrgcorp.PrinterQuoteService.repositories.FilamentRepository;
 import mrgcorp.PrinterQuoteService.repositories.QuoteRepository;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -22,48 +25,78 @@ import java.time.LocalDateTime;
 public class QuoteService {
     private final QuoteRepository quoteRepository;
     private final FilamentRepository filamentRepository;
+    private final OrcaSlicerClientProxy orcaSlicerClientProxy;
+    private final PricingService pricingService;
 
-    public QuoteService(QuoteRepository quoteRepository, FilamentRepository filamentRepository){
+    public QuoteService(QuoteRepository quoteRepository, FilamentRepository filamentRepository,
+                        OrcaSlicerClientProxy orcaSlicerClientProxy, PricingService pricingService){
         this.quoteRepository=quoteRepository;
         this.filamentRepository=filamentRepository;
+        this.orcaSlicerClientProxy=orcaSlicerClientProxy;
+        this.pricingService=pricingService;
     }
     //Generar Quote
     public QuoteResponseDTO processQuote(QuoteRequestDTO quoteRequestDTO){
         //Validamos Datos antes de crear la Quote
         validarStlFile(quoteRequestDTO.stlFile());
-        validarFilamento(quoteRequestDTO.filamentId());
+        Filament filament = validarFilamento(quoteRequestDTO.filamentId());
         validarPieceQuantity(quoteRequestDTO.pieceQuantity());
         validarInfillPercentage(quoteRequestDTO.infillPercentage());
         validarClientName(quoteRequestDTO.clientName());
         validarClientEmail(quoteRequestDTO.clientEmail());
+        byte[] archivo;
         try {
             /*Convertir el MultipartFile (tipo de archivo de Spring) es una interfaz de Spring
             que representa el archivo todavía sin leer — vive temporalmente mientras dura la petición HTTP,
             con metadatos (nombre original, tipo de contenido) además del contenido en sí.
              */
-            byte[] archivo = quoteRequestDTO.stlFile().getBytes();
-            //Crear objeto a almcacenar en la BD
-            Quote quoteEntity = new Quote(
-                    null,
-                    LocalDateTime.now(),
-                    archivo,
-                    quoteRequestDTO.filamentId(),
-                    quoteRequestDTO.layerProfile(),
-                    quoteRequestDTO.infillPercentage(),
-                    quoteRequestDTO.pieceQuantity(),
-                    quoteRequestDTO.supportsNeeded(),
-                    QuoteStatus.CREADO,
-                    quoteRequestDTO.clientName(),
-                    quoteRequestDTO.clientEmail());
-            //Guardamos el objeto en la BD
-            Quote quoteCreada = quoteRepository.save(quoteEntity);
-            //Mandamos la Quote creada en formato de un QuoteResponse
-            return new QuoteResponseDTO(quoteCreada.getId(),quoteCreada.getStatus(),quoteCreada.getCreatedAt(),quoteCreada.getTimeSeconds(),quoteCreada.getWeightGrams(),quoteCreada.getTotalPrice());
+            archivo = quoteRequestDTO.stlFile().getBytes();
         }catch (IOException e){
             throw new FileFormatException("No se pudo leer archivo STL");
         }
-    }
+        //Crear objeto a almcacenar en la BD
+        Quote quoteEntity = new Quote(
+                null,
+                LocalDateTime.now(),
+                archivo,
+                quoteRequestDTO.filamentId(),
+                quoteRequestDTO.layerProfile(),
+                quoteRequestDTO.infillPercentage(),
+                quoteRequestDTO.pieceQuantity(),
+                quoteRequestDTO.supportsNeeded(),
+                QuoteStatus.CREADO,
+                quoteRequestDTO.clientName(),
+                quoteRequestDTO.clientEmail());
+        //Guardar el objeto en la BD
+        Quote quoteCreada = quoteRepository.save(quoteEntity);
 
+        //Iniciar proceso del slicer
+        try {
+            SliceResultResponseDTO sliceResult = orcaSlicerClientProxy.processSlicer(
+                    quoteRequestDTO.stlFile(),
+                    quoteCreada.getLayerProfile().getIdProfile(),
+                    filament.filamentSettingsId(),
+                    quoteCreada.getPieceQuantity(),
+                    quoteCreada.isSupportsNeeded(),
+                    quoteCreada.getInfillPercentage());
+            //Iniciar proceso de calcular precio
+            BigDecimal quotePrice = pricingService.calculatePrice(sliceResult, filament.pricePerKg());
+            //Actualizamos los valores time, weight y price de la quote
+            quoteCreada.setTimeSeconds(sliceResult.estimate().timeSeconds());
+            quoteCreada.setWeightGrams(sliceResult.estimate().weightGrams());
+            quoteCreada.setTotalPrice(quotePrice);
+            quoteCreada.setStatus(QuoteStatus.COTIZADA);
+        }catch (SlicerException ex){
+            //La quote se creara pero con un status diferente
+            quoteCreada.setStatus(QuoteStatus.REVISION_MANUAL);
+            //Se maneja en el handler
+            throw(ex);
+        }
+        //Guaradamos la quote en la BD
+        quoteRepository.save(quoteCreada);
+        //Mandamos la Quote creada en formato de un QuoteResponse
+        return new QuoteResponseDTO(quoteCreada.getId(), quoteCreada.getStatus(), quoteCreada.getCreatedAt(), quoteCreada.getTimeSeconds(), quoteCreada.getWeightGrams(), quoteCreada.getTotalPrice());
+    }
     //Obtener Quote
     public QuoteResponseDTO getQuoteById(Long id){
         var quote = quoteRepository.findQuote(id)
@@ -72,12 +105,13 @@ public class QuoteService {
     }
 
     //Metodos de validacion
-    private void validarFilamento(Long filamentId){
+    private Filament validarFilamento(Long filamentId){
         //Verificar que el id del filamento exista en la BD
         Filament filament = filamentRepository.findFilamentById(filamentId)
                 .orElseThrow(()->new ResourceNotFoundException("Filamento no encontrado"));
         //Verificar que el filamento este disponible
         if(!filament.available()) throw new FilamentUnavailableException("Filamento no disponible, elige otro");
+        return filament;
     }
 
     private void validarStlFile(MultipartFile stlFile){
