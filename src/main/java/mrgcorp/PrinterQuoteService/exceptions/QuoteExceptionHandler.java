@@ -27,7 +27,7 @@ public class QuoteExceptionHandler{
     }
     @ExceptionHandler(SlicerException.class)
     public ResponseEntity<String> exceptionSlicerHandler(SlicerException e){
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        return ResponseEntity.status(HttpStatus.CREATED).body(e.getMessage());
     }
 
     // 2. Manejador para las excepciones de Spring

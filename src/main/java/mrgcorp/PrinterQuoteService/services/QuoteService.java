@@ -89,8 +89,6 @@ public class QuoteService {
         }catch (SlicerException ex){
             //La quote se creara pero con un status diferente
             quoteCreada.setStatus(QuoteStatus.REVISION_MANUAL);
-            //Se maneja en el handler
-            throw(ex);
         }
         //Guaradamos la quote en la BD
         quoteRepository.save(quoteCreada);

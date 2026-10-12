@@ -62,7 +62,7 @@ public class OrcaSlicerClientProxy {
                     .body(BodyInserters.fromMultipartData(campos))//Construir cuerpos de peticion en formatos que no son un objeto serializado
                     .retrieve()//Indica que requiero de la respuesta del endpoint
                     .bodyToMono(StlDraftResponseDTO.class)//Que tipo de dato vamos a mapear la respuesta
-                    .block();//Didspara la peticion y obliga a esperar por el resultado y DEVUELVE EL OBJETO
+                    .blockOptional().orElseThrow(()->new ImportStlException("Respuesta vacia del primer paso: import stl"));//Didspara la peticion y obliga a esperar por el resultado y DEVUELVE EL OBJETO
         }catch(WebClientException ex){
             throw new ImportStlException("Error de importacion: "+ex.getMessage());
         }
@@ -71,10 +71,10 @@ public class OrcaSlicerClientProxy {
     private ThreeMfConversionResponseDTO convertStl(String draftToken){
         try{
             return webClient.post()
-                    .uri("stl/"+draftToken+"/3mf")
+                    .uri("/stl/"+draftToken+"/3mf")
                     .retrieve()
                     .bodyToMono(ThreeMfConversionResponseDTO.class)
-                    .block();
+                    .blockOptional().orElseThrow(()->new ConvertStlException("Respuesta vacia del segundo paso: Convertir a 3mf"));
         }catch(WebClientException ex){
             throw new ConvertStlException("Error de conversion STL: "+ex.getMessage());
         }
@@ -88,6 +88,7 @@ public class OrcaSlicerClientProxy {
         final String infillPercentageString = infillPercentage +"%";
         final String supportsNeededString = (supportsNeeded)?"1":"0";
         final List<String> filamentSettingsIds = List.of(filamentSettingsId);
+        SliceResultResponseDTO respuestaSlicer;
 
         //Crear el atributo Objeto con sus valores respectivos
         Map<String, String> processOverrides = new HashMap<>();
@@ -97,14 +98,17 @@ public class OrcaSlicerClientProxy {
         SliceRequestDTO sliceRequestDTO = new SliceRequestDTO(inputToken,machineId,processId,filamentSettingsIds,autoCenter,processOverrides,pieceQuantity);
 
         try {
-            return webClient.post()
+            respuestaSlicer = webClient.post()
                     .uri("/slice/v2")
                     .body(Mono.just(sliceRequestDTO), SliceRequestDTO.class)
                     .retrieve()
                     .bodyToMono(SliceResultResponseDTO.class)
-                    .block();
+                    .blockOptional().orElseThrow(()->new SlicerStlException("Respuesta vacia del tercer paso: Laminar la pieza"));
         }catch (WebClientException ex){
             throw new SlicerStlException("Error en el slicer: "+ex.getMessage());
         }
+        //Validamos que el JSON el objeto interno "Estimate" venga con valores
+        if(respuestaSlicer.estimate()==null) throw new SlicerStlException("El \"Estimate\" con los valores de tiempo y gramos consumidos venia vacio");
+        return respuestaSlicer;
     }
 }
