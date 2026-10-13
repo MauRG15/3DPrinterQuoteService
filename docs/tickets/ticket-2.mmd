@@ -1,18 +1,86 @@
-# Ticket #2 — Cotización automática con el slicer
+# Ticket #2 — Cotización automática con OrcaSlicer
 
-**Contexto:** hoy una solicitud se guarda con estatus `CREADO` y alguien tiene que laminar la pieza a mano para darle un precio al cliente. Queremos que el sistema lo haga solo: que lamine el STL, obtenga tiempo y material, calcule el precio y se lo devuelva al cliente sin intervención manual.
+## Objetivo
+Al recibir una solicitud de cotización, laminar la pieza automáticamente
+contra el servicio headless de OrcaSlicer y calcular el precio, en lugar de
+dejar la quote pendiente de cotización manual.
 
-**Criterios de aceptación:**
+## Alcance
+- Integración HTTP con OrcaSlicer headless (3 pasos: import → 3mf → slice)
+- Cálculo de precio a partir de gramos consumidos y minutos de máquina
+- Degradación controlada: si el slicer no responde, la quote se guarda
+  igual con status REVISION_MANUAL y el cliente recibe su id
 
-- Al crear una solicitud, el sistema la lamina automáticamente y devuelve al cliente el tiempo estimado, los gramos de filamento y el precio.
-- El precio se calcula a partir del material consumido, el tiempo de máquina y un margen. Ninguno de esos valores está escrito en el código: se configuran fuera.
-- La solicitud queda guardada con esos resultados, de modo que consultarla después devuelve la misma cotización sin volver a laminar.
-- Si el slicer no responde o falla, la solicitud **no se pierde**: queda registrada y el cliente recibe un mensaje claro de que su cotización se procesará aparte.
-- Los parámetros que el cliente eligió (material, calidad, relleno, soportes, cantidad) se traducen correctamente a lo que la API del slicer espera.
-- El sistema registra cuánto tarda cada laminado.
+## Cambios en base de datos
+```sql
+ALTER TABLE Quote
+ADD weight_grams FLOAT NULL,
+    time_seconds FLOAT NULL,
+    total_price DECIMAL(10,2) NULL;
+```
+Las tres columnas son NULL porque solo se pueblan cuando el laminado tiene éxito.
 
-**Fuera de alcance:**
+## Nuevas propiedades
+```properties
+slicer.base-url=http://localhost:8070
+slicer.machine-id=GM001
+pricing.profit-price-multiplier=1.4
+pricing.machine-cost-per-min=1.67
+```
 
-- Nada de recomendación de configuraciones por historial (eso es el Ticket #3).
-- Nada de horas de impresora ni mantenimiento.
-- Nada de panel visual ni notificaciones al cliente.
+## Dependencias
+- `spring-boot-starter-webflux` (solo por WebClient; la app sigue siendo MVC)
+
+## Clases nuevas
+| Clase | Responsabilidad |
+|---|---|
+| `OrcaSlicerClientProxy` | Encapsula los 3 pasos HTTP contra el slicer |
+| `PricingService` | Calcula el precio final a partir del resultado del laminado |
+| `SlicerException` (abstracta) | Raíz de los fallos del slicer |
+| `ImportStlException` / `ConvertStlException` / `SlicerStlException` | Identifican en qué paso falló |
+| DTOs: `StlDraftResponseDTO`, `ThreeMfConversionResponseDTO`, `SliceRequestDTO`, `SliceResultResponseDTO`, `Estimate` | Mapeo del contrato JSON del slicer |
+
+## Fórmula de precio
+costoMaterial = (gramos × precioPorKg) / 1000
+costoMaquina = minutos × machineCostPerMin
+precioFinal = (costoMaterial + costoMaquina) × priceMultiplier
+
+Redondeo HALF_UP a 2 decimales para coincidir con DECIMAL(10,2).
+
+## Flujo
+1. Validar parámetros (igual que Ticket #1)
+2. Guardar Quote con status CREADO
+3. Llamar al slicer
+   - Éxito → poblar tiempo, peso y precio; status COTIZADA
+   - Fallo → status REVISION_MANUAL, campos en NULL
+4. Guardar y responder 201 en ambos casos
+
+El fallo del slicer **no** se propaga al cliente: se maneja en el `catch` de
+`QuoteService`, porque la quote sí quedó registrada y el cliente necesita su
+id para consultarla después.
+
+## Estado
+- [x] Columnas agregadas en BD
+- [x] DTOs del contrato del slicer
+- [x] Jerarquía de excepciones
+- [x] `OrcaSlicerClientProxy` con los 3 pasos
+- [x] `PricingService`
+- [x] Integración en `QuoteService`
+- [x] Prueba camino feliz (slicer activo)
+- [x] Prueba degradación (slicer caído)
+- [ ] Decidir si se conserva el `@ExceptionHandler(SlicerException.class)`
+
+## Evidencia de pruebas
+| Caso | Resultado |
+|---|---|
+| Slicer activo, Benchy, STANDARD_20, 40% relleno | 201 — id 11, COTIZADA, 2576.55 s, 13.61 g, $106.08 — 32.25 s de respuesta |
+| Slicer detenido, mismos parámetros | 201 — id 8, REVISION_MANUAL, los tres campos en NULL — 4.66 s |
+| Contenedor recién iniciado | `PremarureCloseException` atrapada correctamente → REVISION_MANUAL |
+
+## Deuda técnica identificada
+1. **Sin timeout explícito en WebClient.** Un laminado real tarda ~32 s; cualquier
+   timeout debe ser holgado (≥180 s) para no descartar cotizaciones válidas.
+2. **Respuesta síncrona de 30+ segundos.** El patrón adecuado sería responder 202
+   de inmediato y laminar aparte, con el cliente consultando vía `GET /quote/{id}`.
+   Requiere concurrencia — pendiente para un ticket posterior.
+3. **`machine-id` fijo a GM001.** Solo contempla la X1 Carbon con boquilla 0.4 mm.
