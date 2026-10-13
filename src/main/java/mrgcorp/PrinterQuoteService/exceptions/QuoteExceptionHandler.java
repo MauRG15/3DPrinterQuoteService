@@ -25,11 +25,7 @@ public class QuoteExceptionHandler{
     public ResponseEntity<String> exceptionResourceNotFoundHandler(ResourceNotFoundException e){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
-    @ExceptionHandler(SlicerException.class)
-    public ResponseEntity<String> exceptionSlicerHandler(SlicerException e){
-        return ResponseEntity.status(HttpStatus.CREATED).body(e.getMessage());
-    }
-
+    
     // 2. Manejador para las excepciones de Spring
     // (BindException, MethodArgumentNotValidException, MaxUploadSizeExceededException)
     // Manejar excepcion en caso de un parametro con tipo de dato incorrecto
