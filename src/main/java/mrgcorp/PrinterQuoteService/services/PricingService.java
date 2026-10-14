@@ -9,11 +9,16 @@ import java.math.RoundingMode;
 
 @Service
 public class PricingService {
-    @Value("${pricing.profit-price-multiplier}")
-    private BigDecimal profitMargin;
-    @Value("${pricing.machine-cost-per-min}")
-    private BigDecimal machineCostPerMin;
-
+    private final BigDecimal profitMargin;
+    private final BigDecimal machineCostPerMin;
+    //Recibe los valores de las propiedades  en el constructor
+    //@Value es anotacion de Spring, asigna el valor cuando Spring construye el objeto, al colocarlo como paramaetros del constructor
+    //nos permite poder crear objetos manualmente con dichos valores.
+    public PricingService(@Value("${pricing.profit-price-multiplier}") BigDecimal profitMargin,
+                          @Value("${pricing.machine-cost-per-min}") BigDecimal machineCostPerMin){
+        this.profitMargin = profitMargin;
+        this.machineCostPerMin = machineCostPerMin;
+    }
     public BigDecimal calculatePrice(SliceResultResponseDTO sliceResult, BigDecimal pricePerKg){
         BigDecimal weightGrams = BigDecimal.valueOf(sliceResult.estimate().weightGrams());
         BigDecimal minsWorked = BigDecimal.valueOf(sliceResult.estimate().timeSeconds())
