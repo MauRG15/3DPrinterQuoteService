@@ -17,17 +17,30 @@ services:
       retries: 10
       start_period: 20s
 
+  orcaslicer-headless:
+    image: ghcr.io/leolobato/orcaslicer-headless:latest
+    container_name: 3d_quote_slicer
+    ports:
+      - "8070:8070"
+    volumes:
+      - slicer_data:/data
+      - ./profiles:/opt/orcaslicer/profiles
+
   quote-service:
     build: .
     container_name: 3d_quote_app
     environment:
       - DB_PASSWORD=${DB_PASSWORD}
       - SPRING_DATASOURCE_URL=jdbc:sqlserver://sqlserver:1433;databaseName=Cotizador_3DPrinter;encrypt=true;trustServerCertificate=true
+      - SLICER_BASE_URL=http://orcaslicer-headless:8070
     ports:
       - "8080:8080"
     depends_on:
       sqlserver:
         condition: service_healthy
+      orcaslicer-headless:
+        condition: service_started
 
 volumes:
   mssql_data:
+  slicer_data:
