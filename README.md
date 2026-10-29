@@ -95,3 +95,16 @@ dependencies are mocked, including the slicer failure path.
 ## Documentation
 
 Ticket breakdowns and technical debt notes live in `docs/tickets/`.
+
+## Slicer profiles
+
+The `profiles/` folder contains a subset of the OrcaSlicer system profiles
+(BBL and OrcaFilamentLibrary only), copied from the OrcaSlicer project. Other
+vendors are excluded on purpose to avoid duplicate `setting_id` collisions.
+See `profiles/NOTICE.md` for the origin and license.
+
+## Third-party software
+
+This project calls [orca-headless](https://github.com/leolobato/orcaslicer-headless)
+over HTTP, run as a separate container. It is not bundled or modified here.
+orca-headless and OrcaSlicer are licensed under AGPL-3.0.
