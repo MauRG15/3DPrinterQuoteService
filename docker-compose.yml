@@ -38,8 +38,26 @@ services:
     depends_on:
       sqlserver:
         condition: service_healthy
+      init:
+        condition: service_completed_successfully
       orcaslicer-headless:
         condition: service_started
+  init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: 3d_quote_init
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      - DB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ./docs:/scripts:ro
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P "$$DB_PASSWORD" -C -b -v APP_PASSWORD="$$DB_PASSWORD" -i /scripts/schema.sql &&
+        /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P "$$DB_PASSWORD" -C -b -i /scripts/seed.sql
 
 volumes:
   mssql_data:

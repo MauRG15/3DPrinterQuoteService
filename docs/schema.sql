@@ -1,19 +1,22 @@
--- Crear la base de datos
-CREATE DATABASE Cotizador_3DPrinter;
+IF DB_ID('Cotizador_3DPrinter') IS NULL
+    CREATE DATABASE Cotizador_3DPrinter;
 GO
 
--- Crear login y usuario de la aplicación
--- Reemplaza <TU_PASSWORD> por la contraseña que uses en la variable DB_PASSWORD
-CREATE LOGIN cotizador3dApp WITH PASSWORD = '<TU_PASSWORD>', CHECK_POLICY = OFF;
+IF NOT EXISTS (SELECT 1 FROM sys.sql_logins WHERE name = 'cotizador3dApp')
+    CREATE LOGIN cotizador3dApp WITH PASSWORD = '$(APP_PASSWORD)', CHECK_POLICY = OFF;
+ELSE
+    ALTER LOGIN cotizador3dApp WITH PASSWORD = '$(APP_PASSWORD)', CHECK_POLICY = OFF;
 GO
 
 USE Cotizador_3DPrinter;
 GO
 
-CREATE USER cotizador3dApp FOR LOGIN cotizador3dApp;
+IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'cotizador3dApp')
+    CREATE USER cotizador3dApp FOR LOGIN cotizador3dApp;
 ALTER ROLE db_owner ADD MEMBER cotizador3dApp;
 GO
 
+IF OBJECT_ID('dbo.Filament', 'U') IS NULL
 CREATE TABLE Filament (
     id BIGINT IDENTITY(1,1) NOT NULL,
     material_type VARCHAR(100) NOT NULL,
@@ -25,6 +28,7 @@ CREATE TABLE Filament (
 );
 GO
 
+IF OBJECT_ID('dbo.Quote', 'U') IS NULL
 CREATE TABLE Quote (
     id BIGINT IDENTITY(1,1) NOT NULL,
     created_at DATETIME2 NOT NULL,
