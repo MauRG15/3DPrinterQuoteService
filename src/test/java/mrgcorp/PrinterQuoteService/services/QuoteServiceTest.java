@@ -254,8 +254,8 @@ public class QuoteServiceTest {
     }
 
     @Test
-    @DisplayName("Validar el flujo si la Quote si existe")
-    public void validarQuoteExistente(){
+    @DisplayName("Validar el flujo si el STL si existe")
+    public void validarStlExistente(){
         //ARRANGE
         //Datos para un correcto flujo
         Long idValida = 1L;

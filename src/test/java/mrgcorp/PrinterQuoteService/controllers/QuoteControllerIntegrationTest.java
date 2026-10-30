@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc//prepara el MockMvc para inyectarlo
@@ -42,5 +42,30 @@ public class QuoteControllerIntegrationTest {
         //Pasamos todos los parametros menos el stl
         mockMvc.perform(multipart("/quote"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Test de obtener un STL de una quote inexistente (404)")
+    void stlInexistente() throws Exception {
+        // 1. Configurar el mock para que lance la excepción cuando busquen un ID que no existe
+        given(quoteService.getStlById(999L))
+                .willThrow(new ResourceNotFoundException("Cotización no encontrada"));
+
+        // 2. Ejecutar la petición y esperar un HTTP 404 Not Found
+        mockMvc.perform(get("/quote/999/stl"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Test de obtener un STL de una quote existente")
+    void stlExistente() throws Exception {
+        byte[] bytesEsperados=getClass().getResourceAsStream("/benchy.stl").readAllBytes();
+        given(quoteService.getStlById(1L))
+                .willReturn(bytesEsperados);
+        mockMvc.perform(get("/quote/1/stl"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition",
+                        org.hamcrest.Matchers.containsString("attachment")))
+                .andExpect(content().bytes(bytesEsperados));
     }
 }
