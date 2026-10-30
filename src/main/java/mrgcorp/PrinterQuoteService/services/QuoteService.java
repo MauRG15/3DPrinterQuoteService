@@ -102,6 +102,13 @@ public class QuoteService {
         return new QuoteResponseDTO(quote.getId(),quote.getStatus(),quote.getCreatedAt(),quote.getTimeSeconds(),quote.getWeightGrams(),quote.getTotalPrice());
     }
 
+    //Obtener bytes del stl guardado
+    public byte[] getStlById(Long id){
+        var quote = quoteRepository.findQuote(id)
+                .orElseThrow(()->new ResourceNotFoundException("Quote \""+id+"\" no encontrada, verifica que el ID de la Quote sea uno valido"));
+        return quote.getStlFile();
+    }
+
     //Metodos de validacion
     private Filament validarFilamento(Long filamentId){
         //Verificar que el id del filamento exista en la BD
