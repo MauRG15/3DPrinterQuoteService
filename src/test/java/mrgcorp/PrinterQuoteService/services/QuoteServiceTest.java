@@ -222,6 +222,55 @@ public class QuoteServiceTest {
         //Asegurar que la quote se guardo pero con un status de revision manual
         assertEquals(QuoteStatus.REVISION_MANUAL, guardada.getStatus());
     }
+
+    @Test
+    @DisplayName("Validar la Excepcion si la Quote no existe")
+    public void validarQuoteInexistente(){
+        //ARRANGE
+        //Datos para causar falla
+        Long idInvalido = Long.MAX_VALUE;
+        //Establecemos el punto de evaluacion, el metodo a evaluar
+        given(quoteRepository.findQuote(idInvalido)).willReturn(Optional.empty());
+
+        //ACT Y ASSERT
+        //Validamos que lance una excepcion al no encontrar el id de la quote
+        assertThrows(ResourceNotFoundException.class,
+                ()->quoteService.getQuoteById(idInvalido));
+    }
+
+    @Test
+    @DisplayName("Validar la Excepcion si el STL no existe")
+    public void validarStlInexistente(){
+        //ARRANGE
+        //Datos para causar falla
+        Long idInvalido = Long.MAX_VALUE;
+        //Establecemos el punto de evaluacion, el metodo a evaluar
+        given(quoteRepository.findQuote(idInvalido)).willReturn(Optional.empty());
+
+        //ACT Y ASSERT
+        //Validamos que lance una excepcion al no encontrar el id del stl
+        assertThrows(ResourceNotFoundException.class,
+                ()->quoteService.getStlById(idInvalido));
+    }
+
+    @Test
+    @DisplayName("Validar el flujo si el STL si existe")
+    public void validarStlExistente(){
+        //ARRANGE
+        //Datos para un correcto flujo
+        Long idValida = 1L;
+        //Establecemos el punto de evaluacion, el metodo a evaluar
+        given(quoteRepository.findQuote(idValida)).willReturn(Optional.of(quoteValida()));
+
+        //ACT
+        byte[] resultado = quoteService.getStlById(idValida);
+
+        //ASSERT
+        //Validamos que el contenido sea igual(para arrays usar assertArrayEquals)
+        assertArrayEquals(contenido,resultado);
+
+        verify(quoteRepository).findQuote(idValida);
+    }
     private Filament filamentoValido() {
         return new Filament(1L, "PLA", "Rojo", BigDecimal.valueOf(298), "GFSL95_00", true);
     }

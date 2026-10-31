@@ -89,8 +89,15 @@ outside Docker, replace `$(APP_PASSWORD)` yourself or use SQLCMD mode.
 | `GET` | `/quote/{id}` | Retrieve an existing quote |
 | `GET` | `/filament/available` | List available filaments |
 | `GET` | `/filament/colorsByMaterial?materialType=PLA` | List colors for a material |
-
+| `GET` | `/quote/{id}/stl` | Download the STL file stored for a quote (internal use) |
 Base path: `/3dPrinterQuoteService`
+
+### Security note
+
+There is no authentication yet. Quote ids are sequential, so `GET /quote/{id}/stl`
+would let anyone who can reach the service download any customer's file. It is
+meant for the business owner only, and should not be exposed publicly until
+access control is added.
 
 ### Quote status
 
@@ -130,7 +137,7 @@ configurable. Money is handled with `BigDecimal` and explicit rounding.
 ./mvnw test
 ```
 
-13 automated tests: unit tests for the pricing formula and the quote service
+19 automated tests: unit tests for the pricing formula and the quote service
 (Mockito), and web-layer tests with MockMvc. The suite runs without Docker:
 external dependencies are mocked, including the slicer failure path.
 
@@ -161,8 +168,8 @@ over HTTP, run as a separate container. It is not bundled or modified here.
 orca-headless and OrcaSlicer are licensed under AGPL-3.0.
 
 ## Roadmap
-
-- Download the stored STL of a quote (`GET /quote/{id}/stl`)
+- Access control for owner-only endpoints such as the STL download
+- Store the original filename of the uploaded STL
 - Asynchronous quoting (202 + polling): slicing takes ~30s, too long to hold
   an HTTP connection
 - Distinguish `copies_dont_fit` from infrastructure failures and return a
