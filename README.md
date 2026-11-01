@@ -90,6 +90,7 @@ outside Docker, replace `$(APP_PASSWORD)` yourself or use SQLCMD mode.
 | `GET` | `/filament/available` | List available filaments |
 | `GET` | `/filament/colorsByMaterial?materialType=PLA` | List colors for a material |
 | `GET` | `/quote/{id}/stl` | Download the STL file stored for a quote (internal use) |
+
 Base path: `/3dPrinterQuoteService`
 
 ### Security note
